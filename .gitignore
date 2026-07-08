@@ -1,0 +1,10 @@
+# Ignore actual .env files (use .env.example templates)
+.env
+apps/api/.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
