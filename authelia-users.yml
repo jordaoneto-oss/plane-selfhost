@@ -1,0 +1,9 @@
+Warning: Permanently added '192.168.0.36' (ED25519) to the list of known hosts.
+[sudo: authenticate] Password: 
+users:
+  admin:
+    displayname: "Jordao Neto"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$U3h4LWZqhFMKKU+s6Adp4A$ZrfBLNM7YYcv+af2a9Eu6N8/dmettvt9wdqPVrU9sp8"
+    email: jordaosneto@hotmail.com
+    groups:
+      - admins

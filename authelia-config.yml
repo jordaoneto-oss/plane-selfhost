@@ -1,0 +1,130 @@
+Warning: Permanently added '192.168.0.36' (ED25519) to the list of known hosts.
+[sudo: authenticate] Password: 
+#################################################################
+#                   Authelia configuration                      #
+#################################################################
+server:
+  host: 0.0.0.0
+  port: 9091
+  tls:
+    key: /certs/key.pem
+    certificate: /certs/cert.pem
+
+log:
+  level: info
+
+theme: light
+
+jwt_secret: d3965bf8446952ef553acfd882f413d671b401d43c0758db00e271c4ac518ed9
+
+totp:
+  issuer: plane.local
+  period: 30
+  skew: 1
+
+ntp:
+  disable_startup_check: true
+
+authentication_backend:
+  file:
+    path: /config/users.yml
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: "192.168.0.36"
+      policy: bypass
+      resources:
+        - "^/api/.*$"
+        - "^/auth/.*$"
+        - "^/spaces/.*$"
+        - "^/live/.*$"
+    - domain: "192.168.0.36"
+      policy: one_factor
+
+session:
+  name: authelia_session
+  secret: c2ab283edd0891bbd2055cbd59eb176a67e3a15b9ce502d4e2e423b23d9953b9
+  expiration: 3600
+  inactivity: 300
+  same_site: lax
+  cookies:
+    - domain: 192.168.0.36
+      authelia_url: https://192.168.0.36:9091
+      same_site: lax
+
+regulation:
+  max_retries: 5
+  find_time: 2m
+  ban_time: 5m
+
+storage:
+  encryption_key: 0ec1c739ba819923c1de03cc2d411fff92816ae36feaebefa32c8d72c116eb5e
+  postgres:
+    address: tcp://addons-db:5432
+    database: addons
+    username: addons
+    password: addons
+
+notifier:
+  filesystem:
+    filename: /config/notifications.yml
+
+identity_providers:
+  oidc:
+    hmac_secret: 7e3d51bb5aac55d5d3ae2600b1ecedb09c3ec0402126f8513bd5df3eb99ce084
+    issuer_private_key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEogIBAAKCAQEAuvQaltgmdz7WM6VArpoVSR7KmWoJKq373qCtfoUCJB4PadUP
+      UjB6u15pMnxaRmkkcfxTdxPW/fgBexXGgTS4kzyo72sS1TngVLP1V/QJpSMyiGOm
+      6iJ9kmAb9/QxX1+f8GwP/kbW1Eu5vyxzL8TFkp++sfQ7ur+pviVCf8JMy+saF8Nq
+      366oXEVRF+Z9Qz/3r9OIVwW9JYzq6d8FnTdzHbpKqiFVifZtYGdzDqY6XQICcKWf
+      N0zl83ST51txW4yxsbH87eDOL+LDyCqT92SVuiReev3+803O5j+hXkG9VBQyQi7f
+      N3EnxT0hmyGejrLFv4+awkZO5kdT3Fh91NkM4wIDAQABAoIBAES8u4n6ryno0Jjs
+      iXuo62qXB6agdf5bOeAA88kw3jipVMF0tM1jRbzeWY9WaVq6DcxbGdUOVl3KccDv
+      oKyg1bxM8VAV7ja3sONzxyEveNxetJWxDg3H4KOQ8reX8Q8/+W5MTRUQtqwXq5O+
+      pBtMHdhrI5IKWmuvTJm82VZf+hx/EslbOYacpCHF6UI0/PObuH29IW1ShGSaLdXn
+      tdl0UwZUtzwPLYZC8eKGuhbn0coVddogOYA6UZXN/vIsd0WEE6vzhU3yQn6xp5HN
+      V0C9n05ROTU/nWOTkM/ieaJt7ZRfhOYJ5vUJULZbkURAwZ25OT4NXAjv9PfdrNJx
+      J0UcQAECgYEA8eagqfclTjQ7dKbxpcnpZx6i8pEIV8Hi1PSQ9o2jttrZPkvutQye
+      ks9Q98pjlE2snO0NP63zuQ0u4q4tW58e0TraHfi/CbuoJuczesilooZAUg7IXSIz
+      iaMo4qTJxX7QmyltiKgMkEL7zvq+iMzUMpzETrU4MAJ2Hwk0z0PgFQECgYEAxdmd
+      HQWJ6wB+sdu6CQTOG1iGRGigDhxI/1leQK9Bq1HBdObMiHa1bg6d069U6jRQTDC/
+      QvlUOfy3Bd/8WTMhHX058J7eRynmkqSRWaDBVE7pv4Uak4EHWvvUWVw8TXtfMxXg
+      0U1D5K+uX4wjG42RfyuQNFsfJD8SbnLyyuM1beMCgYBLxhOTyjAsZB4vt0/AwBPV
+      0nn2g8naO4jDbmyuXsXmtH0Sj5SRsAdIM5rIU+SHgyFL8tGQnfvXfrKuHSNmLNzp
+      a4cBlna5JMhSj1/H2WxREb66NZk720fLmIlpHXd63vOXdw2xnfp5ghIAzvi6P3dE
+      92hiw097cnnv1OFu/3MFAQKBgCltrttz3HRL7zuY8fSPgATz3XGXouQxgguOEBFl
+      YU/ZV7P93Bg7GzSHdP7teM9t0t6RWotQoBVgWIavZyzaavW80hQTgCHQoUpVkWX+
+      Jl1cBNAos+7tFrgzgTyQ9sOWsNGGpEPPdQb+znmNY5CSbUP+wDxmVDgHyPk9sp9P
+      QlHXAoGALCPTyuefvfWVyxILR5H0jGZlhHcQGcJFfCCIKksItB54tWHvfx/6ckQX
+      t/xRBMgF6JM3qZ2ZBBIhc6Opf69kU/HzYdNaw5nKfDKxAuCwvjjiDSEBfpjer8eb
+      OM8VoUFlrxGKY4Og/Dk5CMMnL+ITLFgEyEdD/n80+xXQpT75W3k=
+      -----END RSA PRIVATE KEY-----
+    cors:
+      endpoints:
+        - authorization
+        - token
+        - revocation
+        - userinfo
+      allowed_origins:
+        - http://192.168.0.36:3001
+        - https://192.168.0.36:9091
+      allowed_origins_from_client_redirect_uris: true
+    clients:
+      - client_id: outline
+        client_name: Outline Wiki
+        client_secret: outline-secret
+        public: false
+        authorization_policy: one_factor
+        redirect_uris:
+          - http://192.168.0.36:3001/auth/oidc/callback
+        scopes:
+          - openid
+          - profile
+          - email
+        grant_types:
+          - authorization_code
+        response_types:
+          - code
+        userinfo_signed_response_alg: none

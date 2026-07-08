@@ -1,0 +1,119 @@
+Warning: Permanently added '192.168.0.36' (ED25519) to the list of known hosts.
+[sudo: authenticate] Password: 
+services:
+  addons-db:
+    container_name: addons-db
+    image: postgres:15-alpine
+    restart: always
+    volumes:
+      - addons-pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: addons
+      POSTGRES_PASSWORD: addons
+      POSTGRES_DB: addons
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U addons"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plane_default
+
+  authelia:
+    container_name: authelia
+    image: authelia/authelia:latest
+    restart: always
+    volumes:
+      - ./authelia/config:/config
+      - ./authelia/certs:/certs
+    environment:
+      TZ: America/Sao_Paulo
+    ports:
+      - "9091:9091"
+    depends_on:
+      addons-db:
+        condition: service_healthy
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - plane_default
+
+  n8n:
+    container_name: n8n
+    image: n8nio/n8n:latest
+    restart: always
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+    environment:
+      N8N_PORT: 5678
+      N8N_SECURE_COOKIE: "false"
+      N8N_PROTOCOL: http
+      N8N_HOST: 192.168.0.36:5678
+      WEBHOOK_URL: http://192.168.0.36:5678
+      DB_TYPE: sqlite
+      DB_SQLITE_DATABASE: /home/node/.n8n/database.sqlite
+    networks:
+      - plane_default
+
+  outline:
+    container_name: outline
+    image: outlinewiki/outline:latest
+    restart: always
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./outline-data:/var/lib/outline/data
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      SECRET_KEY: 235c083381f73702c88b23937182ad4b4abb0c210de2f858713820de38d638b4
+      UTILS_SECRET: 01ec9909d4dee32db5097b83dd50f33942b36ae5b140697c31b05ba2596a142d
+      DATABASE_URL: postgres://addons:addons@addons-db:5432/addons
+      DATABASE_CONNECTION_POOL_MAX: 5
+      REDIS_URL: redis://:redispass@addons-redis:6379
+      URL: http://192.168.0.36:3001
+      COLLABORATION_URL: http://192.168.0.36:3001
+      AWS_ACCESS_KEY_ID: access-key
+      AWS_SECRET_ACCESS_KEY: secret-key
+      AWS_S3_BUCKET_NAME: outline-uploads
+      AWS_S3_UPLOAD_BUCKET_URL: http://192.168.0.36:9000/outline-uploads
+      AWS_S3_ENDPOINT: http://plane-minio:9000
+      AWS_S3_FORCE_PATH_STYLE: true
+      AWS_REGION: us-east-1
+      FILE_STORAGE: s3
+      OIDC_CLIENT_ID: outline
+      OIDC_CLIENT_SECRET: outline-secret
+      OIDC_AUTH_URI: http://192.168.0.36:9091/api/oidc/authorize
+      OIDC_TOKEN_URI: http://192.168.0.36:9091/api/oidc/token
+      OIDC_USERINFO_URI: http://192.168.0.36:9091/api/oidc/userinfo
+      OIDC_LOGOUT_URI: http://192.168.0.36:9091/api/oidc/logout
+      OIDC_DISPLAY_NAME: Authelia
+      OIDC_SCOPES: openid profile email
+      PGSSLMODE: disable
+    depends_on:
+      addons-db:
+        condition: service_healthy
+      addons-redis:
+        condition: service_started
+    networks:
+      - plane_default
+
+  addons-redis:
+    container_name: addons-redis
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - addons-redis-data:/data
+    command: redis-server --requirepass redispass
+    networks:
+      - plane_default
+
+volumes:
+  addons-pgdata:
+  addons-redis-data:
+
+networks:
+  plane_default:
+    external: true
